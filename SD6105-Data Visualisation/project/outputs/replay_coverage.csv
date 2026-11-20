@@ -1,7 +1,0 @@
-﻿id,driver_name,year,expected_laps,observed_laps,coverage_complete,last_lap_position,finish
-verstappen_2024_sao_paulo,Max Verstappen,2024,69,69,True,1,1
-barrichello_2000_germany,Rubens Barrichello,2000,45,45,True,1,1
-fisichella_2003_brazil,Giancarlo Fisichella,2003,54,54,True,1,1
-raikkonen_2005_japan,Kimi Räikkönen,2005,53,53,True,1,1
-button_2011_canada,Jenson Button,2011,70,70,True,1,1
-alonso_2012_europe,Fernando Alonso,2012,57,57,True,1,1
