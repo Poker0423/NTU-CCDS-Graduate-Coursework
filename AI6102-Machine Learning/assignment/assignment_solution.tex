@@ -1,0 +1,529 @@
+\documentclass[12pt,a4paper]{article}
+
+% ─── Packages ───────────────────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{parskip}
+% bbm not available in tectonic; use \boldsymbol{1} for indicator
+
+% ─── Formatting ─────────────────────────────────────────────────────────────
+\hypersetup{colorlinks=true, linkcolor=blue!70!black, urlcolor=blue!70!black}
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.7em}{}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\bx}{\bm{x}}
+\newcommand{\bw}{\bm{w}}
+\newcommand{\by}{\bm{y}}
+\newcommand{\ba}{\bm{\alpha}}
+\newcommand{\ind}[1]{\boldsymbol{1}\!\left[#1\right]}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ─── Document ────────────────────────────────────────────────────────────────
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries AI6012 Machine Learning --- Assignment Solution}\\[0.4em]
+  {\large Total: 25 marks}\\[0.2em]
+  {\small\color{gray}Compiled \today}
+\end{center}
+
+\vspace{1em}
+\hrule
+\vspace{1em}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Question 1 (10 marks): Multi-class Regularised Logistic Regression}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection*{Setup}
+
+Consider a $C$-class classification problem with training set $\{(\bx_i, y_i)\}_{i=1}^N$
+where $\bx_i \in \R^d$ and $y_i \in \{1, \ldots, C\}$.
+The weight matrix is $W = [\bw^{(1)}, \ldots, \bw^{(C)}]$,
+$\bw^{(c)} \in \R^d$.
+The softmax probabilistic model is:
+\begin{equation}
+  P(y = c \mid \bx;\, W)
+  \;=\;
+  \frac{\exp\!\bigl((\bw^{(c)})^\top \bx\bigr)}
+       {\displaystyle\sum_{j=1}^{C} \exp\!\bigl((\bw^{(j)})^\top \bx\bigr)},
+  \qquad c = 1, \ldots, C.
+  \label{eq:softmax}
+\end{equation}
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Part 1: Regularised Negative Log-Likelihood Loss}
+% ──────────────────────────────────────────────────────────────────────────
+
+The negative log-likelihood (cross-entropy) over the dataset, augmented with an
+$\ell_2$ regularisation penalty, is:
+\begin{equation}
+  \mathcal{L}(W)
+  \;=\;
+  -\sum_{i=1}^{N} \log P(y_i \mid \bx_i;\, W)
+  \;+\;
+  \frac{\lambda}{2}\sum_{c=1}^{C}\norm{\bw^{(c)}}_{2}^{2}.
+  \label{eq:loss_raw}
+\end{equation}
+
+Using the one-hot indicator notation $\ind{y_i = c}$ (equals 1 iff $y_i = c$,
+else 0) and expanding the log-probability:
+\begin{align}
+  \log P(y_i \mid \bx_i;\, W)
+  &= \sum_{c=1}^{C} \ind{y_i = c}
+     \Bigl[(\bw^{(c)})^\top \bx_i
+           - \log\textstyle\sum_{j=1}^{C}\exp\!\bigl((\bw^{(j)})^\top \bx_i\bigr)
+     \Bigr].
+\end{align}
+
+Substituting into \eqref{eq:loss_raw}:
+\begin{equation}
+  \boxed{
+  \mathcal{L}(W)
+  \;=\;
+  -\sum_{i=1}^{N}\sum_{c=1}^{C}
+     \ind{y_i = c}
+     \Bigl[(\bw^{(c)})^\top \bx_i
+           - \log\sum_{j=1}^{C}\exp\!\bigl((\bw^{(j)})^\top \bx_i\bigr)
+     \Bigr]
+  \;+\;
+  \frac{\lambda}{2}\sum_{c=1}^{C}\norm{\bw^{(c)}}_{2}^{2}.
+  }
+  \label{eq:loss_full}
+\end{equation}
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Part 2: Gradient w.r.t.\ \texorpdfstring{$\bw^{(c)}$}{w(c)}}
+% ──────────────────────────────────────────────────────────────────────────
+
+\paragraph{Notation.}
+Define for sample $i$ the pre-activation $a_k^{(i)} = (\bw^{(k)})^\top \bx_i$
+and the softmax probability
+$p_c^{(i)} = P(y = c \mid \bx_i;\, W)$.
+
+\paragraph{Step 1: Isolate the terms that depend on $\bw^{(c)}$.}
+
+The regularisation contribution gives immediately $\lambda \bw^{(c)}$.
+The data term involves every $\log P(y_i \mid \bx_i;\, W)$; we differentiate it
+w.r.t.\ $\bw^{(c)}$:
+\begin{align}
+  \frac{\partial}{\partial \bw^{(c)}}
+  \log P(y_i \mid \bx_i;\, W)
+  &= \sum_{k=1}^{C} \ind{y_i = k}
+     \frac{\partial}{\partial \bw^{(c)}}
+     \Bigl[a_k^{(i)} - \log\sum_{j=1}^{C}e^{a_j^{(i)}}\Bigr].
+  \label{eq:grad_start}
+\end{align}
+
+\paragraph{Step 2: Differentiate each component.}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Linear term:}
+    $\dfrac{\partial a_k^{(i)}}{\partial \bw^{(c)}}
+     = \ind{k = c}\,\bx_i$,
+    since $a_k^{(i)} = (\bw^{(k)})^\top\bx_i$ only depends on $\bw^{(c)}$
+    when $k = c$.
+
+  \item \textbf{Log-sum-exp term:}
+    \begin{align}
+      \frac{\partial}{\partial \bw^{(c)}} \log\sum_{j=1}^{C}e^{a_j^{(i)}}
+      &= \frac{1}{\sum_{j}e^{a_j^{(i)}}}
+         \cdot\frac{\partial}{\partial \bw^{(c)}}
+         \sum_{j=1}^{C}e^{a_j^{(i)}} \notag\\
+      &= \frac{e^{a_c^{(i)}}}{\sum_{j}e^{a_j^{(i)}}}
+         \cdot\frac{\partial a_c^{(i)}}{\partial \bw^{(c)}} \notag\\
+      &= p_c^{(i)}\,\bx_i.
+    \end{align}
+\end{itemize}
+
+\paragraph{Step 3: Combine.}
+
+Substituting back into \eqref{eq:grad_start}:
+\begin{align}
+  \frac{\partial}{\partial \bw^{(c)}} \log P(y_i \mid \bx_i;\, W)
+  &= \sum_{k=1}^{C} \ind{y_i = k}
+     \bigl(\ind{k = c} - p_c^{(i)}\bigr)\bx_i \notag\\
+  &= \Bigl[\ind{y_i = c}
+     \;-\; p_c^{(i)}\underbrace{\sum_{k=1}^{C}\ind{y_i = k}}_{=1}\Bigr]\bx_i \notag\\
+  &= \bigl(\ind{y_i = c} - p_c^{(i)}\bigr)\bx_i.
+\end{align}
+
+\paragraph{Step 4: Full gradient.}
+
+Taking the negative and adding the regularisation term:
+\begin{equation}
+  \boxed{
+  \frac{\partial \mathcal{L}}{\partial \bw^{(c)}}
+  \;=\;
+  \sum_{i=1}^{N}\bigl(p_c^{(i)} - \ind{y_i = c}\bigr)\bx_i
+  \;+\;
+  \lambda\,\bw^{(c)},
+  \qquad c = 1, \ldots, C.
+  }
+  \label{eq:gradient}
+\end{equation}
+
+\textit{Interpretation:} Each term is the product of the prediction
+error $(p_c^{(i)} - \ind{y_i=c})$ and the feature vector $\bx_i$,
+summed over all samples, plus the weight-decay term $\lambda\bw^{(c)}$.
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Part 3: Gradient Descent Update Rules}
+% ──────────────────────────────────────────────────────────────────────────
+
+With learning rate $\eta > 0$, the update at step $(t+1)$ is:
+\begin{equation}
+  \bw^{(c)}_{(t+1)}
+  \;=\;
+  \bw^{(c)}_{(t)}
+  \;-\;
+  \eta\,\frac{\partial \mathcal{L}}{\partial \bw^{(c)}}\Bigg|_{(t)}.
+\end{equation}
+
+Substituting \eqref{eq:gradient}:
+\begin{equation}
+  \boxed{
+  \bw^{(c)}_{(t+1)}
+  \;=\;
+  (1 - \eta\lambda)\,\bw^{(c)}_{(t)}
+  \;-\;
+  \eta\sum_{i=1}^{N}
+     \Bigl(p_{c,{(t)}}^{(i)} - \ind{y_i = c}\Bigr)\bx_i,
+  \qquad c = 1, \ldots, C,
+  }
+  \label{eq:update}
+\end{equation}
+where $p_{c,(t)}^{(i)} = P(y=c \mid \bx_i;\, W_{(t)})$ is the predicted
+probability computed at iteration $t$.
+The factor $(1-\eta\lambda)$ is the standard \emph{weight-decay} shrinkage
+introduced by the $\ell_2$ regulariser.
+
+% ═══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Question 2 (5 marks): SVM Experiments with scikit-learn on a9a}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection*{Experimental Setup}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Dataset}: LIBSVM \texttt{a9a}
+        (train: 32,561 samples, test: 16,281 samples; 123 features).
+  \item \textbf{Cross-validation}: 3-fold CV
+        (\texttt{n\_splits=3}, \texttt{shuffle=True}, \texttt{random\_state=42}).
+  \item \textbf{Implementation}: \texttt{sklearn.svm.SVC} (\texttt{scikit-learn}).
+  \item \textbf{Metric}: Mean validation accuracy over 3 folds.
+\end{itemize}
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Table 1: Linear Kernel --- Mean 3-fold Validation Accuracy}
+% ──────────────────────────────────────────────────────────────────────────
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{cc}
+\toprule
+$C$ & Mean Validation Accuracy \\
+\midrule
+0.01 & 0.844784 \\
+0.05 & 0.847179 \\
+\textbf{0.10} & \textbf{0.847978} \\
+0.50 & 0.847947 \\
+1.00 & 0.847855 \\
+\bottomrule
+\end{tabular}
+\caption{Linear kernel 3-fold cross-validation results.
+         Best: $C^* = 0.1$ with mean accuracy $0.847978$.}
+\label{tab:linear}
+\end{table}
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Table 2: RBF Kernel --- Mean 3-fold Validation Accuracy (5$\times$5 Grid)}
+% ──────────────────────────────────────────────────────────────────────────
+
+\begin{table}[h!]
+\centering
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{c|ccccc}
+\toprule
+$C \;\backslash\; \gamma$ & 0.01 & 0.05 & 0.10 & 0.50 & 1.00 \\
+\midrule
+0.01 & 0.759190 & 0.820061 & 0.819508 & 0.759190 & 0.759190 \\
+0.05 & 0.831025 & 0.835601 & 0.834157 & 0.788858 & 0.759190 \\
+0.10 & 0.837904 & 0.839655 & 0.839041 & 0.805504 & 0.761893 \\
+0.50 & 0.843555 & 0.844753 & 0.846411 & 0.832775 & 0.788950 \\
+1.00 & 0.845060 & 0.846964 & \textbf{0.847241} & 0.834679 & 0.797549 \\
+\bottomrule
+\end{tabular}
+\caption{RBF kernel 3-fold cross-validation results.
+         Best: $C^* = 1.0,\; \gamma^* = 0.1$ with mean accuracy $0.847241$.}
+\label{tab:rbf}
+\end{table}
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Table 3: Test Set Evaluation}
+% ──────────────────────────────────────────────────────────────────────────
+
+\paragraph{Model selection.}
+Comparing the best configurations:
+\begin{itemize}[leftmargin=*]
+  \item Linear, $C=0.1$: mean val.\ accuracy $= 0.847978$.
+  \item RBF, $C=1.0, \gamma=0.1$: mean val.\ accuracy $= 0.847241$.
+\end{itemize}
+The \textbf{linear kernel with $C=0.1$} is selected (marginally higher
+validation accuracy).  It is retrained on the \emph{entire} training set
+and evaluated on the held-out test set.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{lc}
+\toprule
+ & Linear kernel, $C = 0.1$ \\
+\midrule
+Accuracy of SVMs & \textbf{0.850132} \\
+\bottomrule
+\end{tabular}
+\caption{Test results of SVC on the a9a test set (in accuracy).
+         The linear kernel with $C=0.1$ was retrained on all 32,561 training
+         samples and evaluated on the held-out test set of 16,281 samples.}
+\label{tab:test}
+\end{table}
+
+\paragraph{Observation.}
+The linear kernel achieves \textbf{85.01\%} test accuracy.
+This is consistent with the finding that the \texttt{a9a} dataset is nearly
+linearly separable in the original 123-dimensional feature space; the RBF
+kernel offers negligible benefit and adds the extra hyperparameter $\gamma$.
+
+% ═══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Question 3 (5 marks): Soft-Margin SVM as Structural Risk Minimisation}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection*{Primal Soft-Margin SVM}
+
+The standard soft-margin SVM solves:
+\begin{equation}
+  \min_{\bw,\, b,\, \bm{\xi}}\;
+  \frac{1}{2}\norm{\bw}^2 + C\sum_{i=1}^{N}\xi_i
+  \label{eq:svm_primal}
+\end{equation}
+\begin{equation*}
+  \text{subject to}\quad
+  y_i(\bw^\top\bx_i + b) \;\geq\; 1 - \xi_i,
+  \qquad
+  \xi_i \;\geq\; 0,
+  \qquad i = 1,\ldots,N.
+\end{equation*}
+
+Let $f(\bx) = \bw^\top\bx + b$.
+
+\subsection*{Hinge Loss Definition}
+
+\begin{equation}
+  \boxed{
+  L_{\text{hinge}}(y,\, f(\bx))
+  \;=\;
+  \max\!\bigl(0,\; 1 - y\cdot f(\bx)\bigr).
+  }
+  \label{eq:hinge}
+\end{equation}
+
+This penalises predictions that are either on the wrong side of the margin
+($y f(\bx) < 1$) linearly, and gives zero loss to correct predictions with
+sufficient margin ($y f(\bx) \geq 1$).
+
+\subsection*{Algebraic Equivalence}
+
+\paragraph{Step 1: Express $\xi_i$ in closed form.}
+
+From the two constraints, for each sample $i$:
+\begin{equation*}
+  \xi_i \;\geq\; 1 - y_i f(\bx_i)
+  \qquad\text{and}\qquad
+  \xi_i \;\geq\; 0.
+\end{equation*}
+Combining: $\xi_i \geq \max(0,\; 1 - y_i f(\bx_i))$.
+
+\paragraph{Step 2: Identify the optimal slack.}
+
+Since $C > 0$, the objective is minimised by making each $\xi_i$ as small as
+possible.  Hence at optimality:
+\begin{equation}
+  \xi_i^* \;=\; \max\!\bigl(0,\; 1 - y_i f(\bx_i)\bigr)
+            \;=\; L_{\text{hinge}}\!\bigl(y_i,\, f(\bx_i)\bigr).
+  \label{eq:xi_opt}
+\end{equation}
+
+\paragraph{Step 3: Substitute back into the objective.}
+
+Replacing $\xi_i$ with $\xi_i^*$ in \eqref{eq:svm_primal} and dropping the
+(now redundant) slack variable constraints:
+\begin{equation}
+  \min_{\bw,\, b}
+  \;\frac{1}{2}\norm{\bw}^2
+  \;+\; C\sum_{i=1}^{N}\max\!\bigl(0,\; 1 - y_i f(\bx_i)\bigr).
+  \label{eq:erm_form}
+\end{equation}
+
+\paragraph{Step 4: SRM formulation.}
+
+Rearranging \eqref{eq:erm_form} into the Empirical Structural Risk Minimisation
+(SRM) form:
+\begin{equation}
+  \boxed{
+  \min_{\bw,\, b}
+  \underbrace{C\sum_{i=1}^{N}
+     L_{\text{hinge}}\!\bigl(y_i,\, f(\bx_i)\bigr)}_{\text{Empirical Risk}}
+  \;+\;
+  \underbrace{\frac{1}{2}\norm{\bw}^2}_{\text{Regularisation (Complexity Penalty)}}.
+  }
+  \label{eq:srm}
+\end{equation}
+
+The two problems \eqref{eq:svm_primal} and \eqref{eq:srm} are
+\textbf{exactly equivalent}: given any feasible point $(\bw, b)$, the objectives
+coincide because the slack variables are uniquely determined by \eqref{eq:xi_opt}.
+The trade-off parameter $C$ controls the balance between minimising training
+hinge loss (empirical risk) and controlling the weight norm (structural
+complexity of the model class).
+
+% ═══════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Question 4 (5 marks): Kernelised Ridge Regression}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection*{Setup and Kernel Extension Idea}
+
+To solve \emph{nonlinear} regression, we replace every input $\bx_i \in \R^d$
+with its image $\phi(\bx_i)$ under a (possibly infinite-dimensional) feature
+map $\phi: \R^d \to \mathcal{H}$.  All inner products then become kernel
+evaluations:
+\[
+  \phi(\bx_i)^\top \phi(\bx_j) \;=\; k(\bx_i,\, \bx_j).
+\]
+We now derive the regularised solution entirely in terms of $k$, so $\phi$ need
+never be computed explicitly.
+
+Let $\Phi \in \R^{N\times D}$ (or infinite) be the mapped data matrix whose
+$i$-th row is $\phi(\bx_i)^\top$.  The regularised regression problem becomes:
+\begin{equation}
+  \min_{\bw}\;
+  \norm{\Phi\bw - \by}^2 + \lambda\norm{\bw}^2,
+  \label{eq:ridge_primal}
+\end{equation}
+with closed-form \textbf{primal solution}:
+\begin{equation}
+  \bw = (\Phi^\top \Phi + \lambda I)^{-1} \Phi^\top \by.
+  \label{eq:primal_sol}
+\end{equation}
+(For the linear case $\phi(\bx)=\bx$, $\Phi = X$ and this recovers the
+standard ridge solution on L3 p.\,50.)
+We now apply the \textbf{kernel trick} by rewriting this solution so that
+only the $N\times N$ Gram matrix $K_{ij}=k(\bx_i,\bx_j)$ appears.
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Part 1: Representer Theorem --- \texorpdfstring{$\bw = \Phi^\top \ba$}{w = Phi' alpha}}
+% ──────────────────────────────────────────────────────────────────────────
+
+The gradient (first-order optimality condition) of \eqref{eq:ridge_primal} is:
+\begin{equation}
+  2\Phi^\top(\Phi\bw - \by) + 2\lambda\bw = \bm{0}.
+\end{equation}
+Rearranging:
+\begin{align}
+  \lambda\bw
+  &= \Phi^\top\by - \Phi^\top\Phi\bw
+   = \Phi^\top\!\bigl(\by - \Phi\bw\bigr). \notag
+\end{align}
+Dividing both sides by $\lambda$:
+\begin{equation}
+  \bw \;=\; \Phi^\top\underbrace{\frac{1}{\lambda}\bigl(\by - \Phi\bw\bigr)}_{\displaystyle\ba}.
+  \label{eq:representer}
+\end{equation}
+
+Therefore $\bw = \Phi^\top\ba$, where $\ba \in \R^N$ is a vector of
+\textbf{dual coefficients} (one per training sample).  This is the
+\textbf{Representer Theorem}: the optimal solution $\bw$ lies in the span
+of the mapped training inputs $\{\phi(\bx_i)\}_{i=1}^N$.
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Part 2: Closed-form Solution for \texorpdfstring{$\ba$}{alpha}}
+% ──────────────────────────────────────────────────────────────────────────
+
+Substitute $\bw = \Phi^\top\ba$ into $\ba = \frac{1}{\lambda}(\by - \Phi\bw)$:
+\begin{align}
+  \ba
+  &= \frac{1}{\lambda}\bigl(\by - \Phi\Phi^\top\ba\bigr)
+   = \frac{1}{\lambda}\bigl(\by - K\ba\bigr),
+\end{align}
+where $K = \Phi\Phi^\top \in \R^{N\times N}$ is the \textbf{kernel (Gram) matrix}
+with entries
+\[
+  K_{ij} = \phi(\bx_i)^\top\phi(\bx_j) = k(\bx_i, \bx_j).
+\]
+Multiplying both sides by $\lambda$:
+\begin{equation}
+  \lambda\ba = \by - K\ba
+  \;\;\Longrightarrow\;\;
+  (K + \lambda I_N)\ba = \by.
+\end{equation}
+Solving:
+\begin{equation}
+  \boxed{
+  \ba = (K + \lambda I_N)^{-1}\by.
+  }
+  \label{eq:alpha_sol}
+\end{equation}
+
+Since $K$ is symmetric positive semi-definite and $\lambda > 0$, the matrix
+$(K + \lambda I_N)$ is strictly positive definite and hence invertible.
+This is the \textbf{kernelised closed-form solution} (the dual analogue of
+the primal solution \eqref{eq:primal_sol}).
+
+% ──────────────────────────────────────────────────────────────────────────
+\subsection{Part 3: Kernelised Prediction}
+% ──────────────────────────────────────────────────────────────────────────
+
+For a new test input $\bx^* \in \R^d$ with feature map $\phi(\bx^*)$:
+\begin{align}
+  f(\bx^*)
+  &= \bw^\top\phi(\bx^*)
+   = (\Phi^\top\ba)^\top\phi(\bx^*) \notag\\
+  &= \ba^\top \Phi\,\phi(\bx^*) \notag\\
+  &= \ba^\top \bm{k}(\bx^*),
+\end{align}
+where
+$\bm{k}(\bx^*) = \bigl[k(\bx_1, \bx^*),\, k(\bx_2, \bx^*),\, \ldots,\,
+k(\bx_N, \bx^*)\bigr]^\top \in \R^N$
+collects all kernel evaluations between $\bx^*$ and the training points
+(since the $i$-th entry of $\Phi\,\phi(\bx^*)$ equals $\phi(\bx_i)^\top\phi(\bx^*)=k(\bx_i,\bx^*)$).
+
+Writing the prediction explicitly:
+\begin{equation}
+  \boxed{
+  f(\bx^*) = \sum_{i=1}^{N} \alpha_i\, k(\bx_i, \bx^*),
+  }
+  \label{eq:prediction}
+\end{equation}
+with $\ba = (K + \lambda I_N)^{-1}\by$.
+The prediction \emph{never} requires computing $\phi$ explicitly; only the
+kernel function $k(\cdot,\cdot)$ is needed.  The complete algorithm is:
+\begin{enumerate}[leftmargin=*]
+  \item Compute $K_{ij} = k(\bx_i, \bx_j)$ for all $N^2$ training pairs.
+  \item Solve $\ba = (K + \lambda I_N)^{-1}\by$ (kernel ridge regression).
+  \item For each test point $\bx^*$, predict via \eqref{eq:prediction}.
+\end{enumerate}
+
+\end{document}
