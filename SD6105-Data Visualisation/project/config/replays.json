@@ -1,0 +1,74 @@
+[
+  {
+    "id": "barrichello_2000_germany",
+    "year": 2000,
+    "race_name": "German Grand Prix",
+    "driver_name": "Rubens Barrichello",
+    "key_laps": [
+      1,
+      6,
+      15,
+      36
+    ]
+  },
+  {
+    "id": "fisichella_2003_brazil",
+    "year": 2003,
+    "race_name": "Brazilian Grand Prix",
+    "driver_name": "Giancarlo Fisichella",
+    "key_laps": [
+      1,
+      42,
+      48,
+      54
+    ]
+  },
+  {
+    "id": "raikkonen_2005_japan",
+    "year": 2005,
+    "race_name": "Japanese Grand Prix",
+    "driver_name": "Kimi Räikkönen",
+    "key_laps": [
+      1,
+      9,
+      24,
+      53
+    ]
+  },
+  {
+    "id": "button_2011_canada",
+    "year": 2011,
+    "race_name": "Canadian Grand Prix",
+    "driver_name": "Jenson Button",
+    "key_laps": [
+      1,
+      40,
+      64,
+      70
+    ]
+  },
+  {
+    "id": "alonso_2012_europe",
+    "year": 2012,
+    "race_name": "European Grand Prix",
+    "driver_name": "Fernando Alonso",
+    "key_laps": [
+      1,
+      14,
+      34,
+      57
+    ]
+  },
+  {
+    "id": "verstappen_2024_sao_paulo",
+    "year": 2024,
+    "race_name": "São Paulo Grand Prix",
+    "driver_name": "Max Verstappen",
+    "key_laps": [
+      1,
+      11,
+      29,
+      43
+    ]
+  }
+]

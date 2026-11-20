@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>From Grid to Glory - Recording Navigator</title>
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+  <header class="operator-bar" aria-label="Recording page navigation">
+    <div class="operator-brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div><strong>Recording navigator</strong><small>From Grid to Glory</small></div>
+    </div>
+    <nav class="scene-tabs" aria-label="Scenes">
+      <button type="button" data-scene="title"><b>01</b> Title</button>
+      <button type="button" data-scene="dashboard"><b>02</b> Dashboard</button>
+      <button type="button" data-scene="conclusion"><b>03</b> Conclusion</button>
+    </nav>
+    <div class="operator-actions">
+      <button type="button" id="previousScene" aria-label="Previous scene">←</button>
+      <span id="sceneStatus" aria-live="polite">Scene 1 of 3</span>
+      <button type="button" id="nextScene" aria-label="Next scene">→</button>
+      <button type="button" id="hideControls">Hide controls <kbd>H</kbd></button>
+    </div>
+  </header>
+  <div class="reveal-zone" title="Move here to restore controls"></div>
+  <main class="stage">
+    <iframe id="sceneFrame" title="Recording scene" src="cards/title.html"></iframe>
+  </main>
+  <script src="player.js"></script>
+</body>
+</html>
