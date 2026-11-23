@@ -1,7 +1,0 @@
-# Install a matching torch/torchvision pair first (tested: torch 2.6.0 + torchvision 0.21.0, CUDA 12.4).
-numpy>=1.26
-Pillow>=11.1
-scipy>=1.15
-matplotlib>=3.7
-nbformat>=5.7
-pytest>=7.1
