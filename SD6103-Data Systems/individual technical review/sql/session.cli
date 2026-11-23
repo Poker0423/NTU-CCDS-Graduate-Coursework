@@ -1,0 +1,14 @@
+.mode duckbox
+.maxwidth 110
+.maxrows 14
+.large_number_rendering off
+.timer off
+.echo off
+.prompt 'DuckDB> ' '   ...> '
+SET threads=2;
+SET memory_limit='768MB';
+SET enable_progress_bar=false;
+SET autoinstall_known_extensions=false;
+SET autoload_known_extensions=false;
+.print 'Retail Sales Analytics | DuckDB 2.0.0 | Synthetic data, seed 6103'
+.print 'Ready. First live command: .read sql/01_intro.sql'

@@ -1,0 +1,163 @@
+Retail Sales Analytics | DuckDB 2.0.0 | Synthetic data, seed 6103
+Ready. First live command: .read sql/01_intro.sql
+SELECT version() AS version, current_database() AS database;
+┌─────────┬──────────┐
+│ version │ database │
+│ varchar │ varchar  │
+├─────────┼──────────┤
+│ v2.0.0  │ review   │
+└─────────┴──────────┘
+SELECT count(*) AS csv_rows
+FROM read_csv('data/raw/sales.csv', header=true);
+┌──────────┐
+│ csv_rows │
+│  int64   │
+├──────────┤
+│   400000 │
+└──────────┘
+.echo off
+CREATE OR REPLACE TEMP VIEW retail AS
+SELECT s.*, c.region, p.category,
+  CAST(quantity*unit_price-discount_amount AS DECIMAL(12,2)) AS revenue
+FROM sales s JOIN customers c USING(customer_id)
+JOIN products p USING(product_id);
+
+SELECT region, category, count(*) AS transactions,
+       sum(revenue) AS revenue_sgd
+FROM retail
+GROUP BY region, category
+ORDER BY revenue_sgd DESC, region, category
+LIMIT 5;
+┌──────────┬─────────────┬──────────────┬───────────────┐
+│  region  │  category   │ transactions │  revenue_sgd  │
+│ varchar  │   varchar   │    int64     │ decimal(38,2) │
+├──────────┼─────────────┼──────────────┼───────────────┤
+│ APAC     │ Electronics │        45556 │   35178394.19 │
+│ Europe   │ Electronics │        28535 │   22120787.20 │
+│ Americas │ Electronics │        22784 │   17666354.38 │
+│ APAC     │ Home        │        39207 │    8347724.75 │
+│ MEA      │ Electronics │        10787 │    8317033.97 │
+└──────────┴─────────────┴──────────────┴───────────────┘
+.echo off
+COPY (SELECT * FROM retail ORDER BY sale_date,sale_id)
+TO 'data/parquet/retail.parquet'
+(FORMAT PARQUET, COMPRESSION ZSTD, ROW_GROUP_SIZE 16384);
+
+SELECT region, sum(revenue) AS december_electronics_sgd
+FROM read_parquet('data/parquet/retail.parquet')
+WHERE sale_date >= DATE '2025-12-01'
+  AND sale_date < DATE '2026-01-01'
+  AND category = 'Electronics'
+GROUP BY region ORDER BY december_electronics_sgd DESC;
+┌──────────┬──────────────────────────┐
+│  region  │ december_electronics_sgd │
+│ varchar  │      decimal(38,2)       │
+├──────────┼──────────────────────────┤
+│ APAC     │               4876822.31 │
+│ Europe   │               2884167.42 │
+│ Americas │               2478904.90 │
+│ MEA      │               1140801.75 │
+└──────────┴──────────────────────────┘
+.echo off
+EXPLAIN
+SELECT region, sum(revenue)
+FROM read_parquet('data/parquet/retail.parquet')
+WHERE sale_date >= DATE '2025-12-01'
+  AND sale_date < DATE '2026-01-01'
+  AND category = 'Electronics'
+GROUP BY region;
+╭─ Hash Group By ───────────────────────────╮
+│ Groups: #0                                │
+│ Aggregates: sum(#1)                       │
+│ ~50,569 rows                              │
+╰─────────────────────┬─────────────────────╯
+╭─ Projection ────────┴─────────────────────╮
+│ Projections: region, revenue              │
+│ ~80,000 rows                              │
+╰─────────────────────┬─────────────────────╯
+╭─ Read Parquet ──────┴─────────────────────╮
+│ Function: READ_PARQUET                    │
+│ Projections: region, revenue              │
+│ Filters: sale_date >= '2025-12-01'::DATE, │
+│          category = 'Electronics'         │
+│ ~80,000 rows                              │
+╰───────────────────────────────────────────╯
+.echo off
+╭─ Summary ───────────╮
+│ Total Time: 0.0064s │
+│ Data Read: 190.5 kB │
+╰─────────────────────╯
+╭─ Hash Group By ───────────────────────────╮
+│ Groups: #0                                │
+│ Aggregates: sum(#1)                       │
+│ 4 rows                                0µs │
+╰─────────────────────┒┎────────────────────╯
+╭─ Projection ────────┚┖────────────────────╮
+│ Projections: region, revenue              │
+│ 14,594 rows                           0µs │
+╰─────────────────────┒┎────────────────────╯
+╭─ Table Scan ────────┚┖────────────────────╮
+│ Function: READ_PARQUET                    │
+│ Projections: region, revenue              │
+│ Filters: sale_date >= '2025-12-01'::DATE, │
+│          category = 'Electronics'         │
+│ Total Files Read: 1                       │
+│ Filename(s): data/parquet/retail.parquet  │
+│ Row Groups Scanned: 4 / 25                │
+│ 14,594 rows                           0µs │
+╰───────────────────────────────────────────╯
+EXPLAIN ANALYZE
+SELECT c.region,p.category,sum(s.quantity*s.unit_price-s.discount_amount)
+FROM sales s JOIN customers c USING(customer_id)
+JOIN products p USING(product_id)
+GROUP BY c.region,p.category;
+╭─ Summary ───────────╮
+│ Total Time: 0.0148s │
+╰─────────────────────╯
+╭─ Projection ──────────────────────────────────────────────────────╮
+│ Projections:                                                      │
+│ __internal_decompress_string(#0),                                 │
+│ __internal_decompress_string(#1), #2                              │
+│ 20 rows                                                       0µs │
+╰─────────────────────────────────┬─────────────────────────────────╯
+╭─ Hash Group By ─────────────────┴─────────────────────────────────╮
+│ Groups: #0, #1                                                    │
+│ Aggregates: sum(#2)                                               │
+│ 20 rows                                                    10.0ms │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Projection ────────────────────┚┖────────────────────────────────╮
+│ Projections:                                                      │
+│ region, category,                                                 │
+│ (CAST(quantity AS DECIMAL(15,0)) * unit_price) - discount_amount  │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Projection ────────────────────┚┖────────────────────────────────╮
+│ Projections:                                                      │
+│ #0, #1, #2, __internal_compress_string_uhugeint(#3),              │
+│ __internal_compress_string_uhugeint(#4)                           │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Hash Join ─────────────────────┚┖────────────────────────────────╮
+│ Join Type: INNER                                                  │
+│ Conditions: customer_id = customer_id                             │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┰┰────────────────────────────────╯
+                                  ┃┠────────────────────────────────────────────────────────────────────────────────────╮
+╭─ Hash Join ─────────────────────┚┖────────────────────────────────╮                                   ╭─ Table Scan ──┴──────────────╮
+│ Join Type: INNER                                                  │                                   │ Table: review.main.customers │
+│ Conditions: product_id = product_id                               │                                   │ Type: Sequential Scan        │
+│ 400,000 rows                                                  0µs │                                   │ Projections: customer_id,    │
+╰─────────────────────────────────┰┰────────────────────────────────╯                                   │              region          │
+                                  ┃┠──────────────────────────────────────────────────╮                 │ Row Groups Scanned: 1 / 1    │
+╭─ Table Scan ────────────────────┚┖────────────────────────────────╮  ╭─ Table Scan ─┴──────────────╮  │ 15,000 rows              0µs │
+│ Table: review.main.sales                                          │  │ Table: review.main.products │  ╰──────────────────────────────╯
+│ Type: Sequential Scan                                             │  │ Type: Sequential Scan       │
+│ Projections: customer_id, product_id, quantity, unit_price,       │  │ Projections: product_id,    │
+│              discount_amount                                      │  │              category       │
+│ Dynamic Filters:                                                  │  │ Row Groups Scanned: 1 / 1   │
+│ optional: customer_id IN PRF(customer_id),                        │  │ 200 rows                0µs │
+│ optional: product_id IN PRF(product_id)                           │  ╰─────────────────────────────╯
+│ Row Groups Scanned: 5 / 5                                         │
+│ 400,000 rows                                                  0µs │
+╰───────────────────────────────────────────────────────────────────╯
+.echo off

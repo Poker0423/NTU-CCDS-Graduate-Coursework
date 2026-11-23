@@ -1,0 +1,49 @@
+╭─ Summary ───────────╮
+│ Total Time: 0.0306s │
+╰─────────────────────╯
+╭─ Projection ──────────────────────────────────────────────────────╮
+│ Projections:                                                      │
+│ __internal_decompress_string(#0),                                 │
+│ __internal_decompress_string(#1), #2                              │
+│ 20 rows                                                       0µs │
+╰─────────────────────────────────┬─────────────────────────────────╯
+╭─ Hash Group By ─────────────────┴─────────────────────────────────╮
+│ Groups: #0, #1                                                    │
+│ Aggregates: sum(#2)                                               │
+│ 20 rows                                                    20.0ms │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Projection ────────────────────┚┖────────────────────────────────╮
+│ Projections:                                                      │
+│ region, category,                                                 │
+│ (CAST(quantity AS DECIMAL(15,0)) * unit_price) - discount_amount  │
+│ 400,000 rows                                               10.0ms │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Projection ────────────────────┚┖────────────────────────────────╮
+│ Projections:                                                      │
+│ #0, #1, #2, __internal_compress_string_uhugeint(#3),              │
+│ __internal_compress_string_uhugeint(#4)                           │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Hash Join ─────────────────────┚┖────────────────────────────────╮
+│ Join Type: INNER                                                  │
+│ Conditions: customer_id = customer_id                             │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┰┰────────────────────────────────╯
+                                  ┃┠────────────────────────────────────────────────────────────────────────────────────╮
+╭─ Hash Join ─────────────────────┚┖────────────────────────────────╮                                   ╭─ Table Scan ──┴──────────────╮
+│ Join Type: INNER                                                  │                                   │ Table: review.main.customers │
+│ Conditions: product_id = product_id                               │                                   │ Type: Sequential Scan        │
+│ 400,000 rows                                                  0µs │                                   │ Projections: customer_id,    │
+╰─────────────────────────────────┰┰────────────────────────────────╯                                   │              region          │
+                                  ┃┠──────────────────────────────────────────────────╮                 │ Row Groups Scanned: 1 / 1    │
+╭─ Table Scan ────────────────────┚┖────────────────────────────────╮  ╭─ Table Scan ─┴──────────────╮  │ 15,000 rows              0µs │
+│ Table: review.main.sales                                          │  │ Table: review.main.products │  ╰──────────────────────────────╯
+│ Type: Sequential Scan                                             │  │ Type: Sequential Scan       │
+│ Projections: customer_id, product_id, quantity, unit_price,       │  │ Projections: product_id,    │
+│              discount_amount                                      │  │              category       │
+│ Dynamic Filters:                                                  │  │ Row Groups Scanned: 1 / 1   │
+│ optional: customer_id IN PRF(customer_id),                        │  │ 200 rows                0µs │
+│ optional: product_id IN PRF(product_id)                           │  ╰─────────────────────────────╯
+│ Row Groups Scanned: 5 / 5                                         │
+│ 400,000 rows                                               10.0ms │
+╰───────────────────────────────────────────────────────────────────╯

@@ -1,0 +1,125 @@
+Actual execution: 2026-11-17T18:20:43.860574+08:00
+
+### 01_intro
+['version', 'database']
+v2.0.0 | review
+['csv_rows']
+400000
+
+### 02_csv_analytics
+['Count']
+['region', 'category', 'transactions', 'revenue_sgd']
+APAC | Electronics | 45556 | 35178394.19
+Europe | Electronics | 28535 | 22120787.20
+Americas | Electronics | 22784 | 17666354.38
+APAC | Home | 39207 | 8347724.75
+MEA | Electronics | 10787 | 8317033.97
+
+### 03_parquet
+['Count']
+400000
+['region', 'december_electronics_sgd']
+APAC | 4876822.31
+Europe | 2884167.42
+Americas | 2478904.90
+MEA | 1140801.75
+
+### 04_explain
+['explain_key', 'explain_value']
+physical_plan | ╭─ Hash Group By ───────────────────────────╮
+│ Groups: #0                                │
+│ Aggregates: sum(#1)                       │
+│ ~50,569 rows                              │
+╰─────────────────────┬─────────────────────╯
+╭─ Projection ────────┴─────────────────────╮
+│ Projections: region, revenue              │
+│ ~80,000 rows                              │
+╰─────────────────────┬─────────────────────╯
+╭─ Read Parquet ──────┴─────────────────────╮
+│ Function: READ_PARQUET                    │
+│ Projections: region, revenue              │
+│ Filters: sale_date >= '2025-12-01'::DATE, │
+│          category = 'Electronics'         │
+│ ~80,000 rows                              │
+╰───────────────────────────────────────────╯
+
+
+### 05_analyze
+['explain_key', 'explain_value']
+analyzed_plan | ╭─ Summary ───────────╮
+│ Total Time: 0.0143s │
+│ Data Read: 190.5 kB │
+╰─────────────────────╯
+╭─ Hash Group By ───────────────────────────╮
+│ Groups: #0                                │
+│ Aggregates: sum(#1)                       │
+│ 4 rows                                0µs │
+╰─────────────────────┒┎────────────────────╯
+╭─ Projection ────────┚┖────────────────────╮
+│ Projections: region, revenue              │
+│ 14,594 rows                           0µs │
+╰─────────────────────┒┎────────────────────╯
+╭─ Table Scan ────────┚┖────────────────────╮
+│ Function: READ_PARQUET                    │
+│ Projections: region, revenue              │
+│ Filters: sale_date >= '2025-12-01'::DATE, │
+│          category = 'Electronics'         │
+│ Total Files Read: 1                       │
+│ Filename(s): data/parquet/retail.parquet  │
+│ Row Groups Scanned: 4 / 25                │
+│ 14,594 rows                        10.0ms │
+╰───────────────────────────────────────────╯
+
+
+### 06_join_plan_optional
+['explain_key', 'explain_value']
+analyzed_plan | ╭─ Summary ───────────╮
+│ Total Time: 0.0306s │
+╰─────────────────────╯
+╭─ Projection ──────────────────────────────────────────────────────╮
+│ Projections:                                                      │
+│ __internal_decompress_string(#0),                                 │
+│ __internal_decompress_string(#1), #2                              │
+│ 20 rows                                                       0µs │
+╰─────────────────────────────────┬─────────────────────────────────╯
+╭─ Hash Group By ─────────────────┴─────────────────────────────────╮
+│ Groups: #0, #1                                                    │
+│ Aggregates: sum(#2)                                               │
+│ 20 rows                                                    20.0ms │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Projection ────────────────────┚┖────────────────────────────────╮
+│ Projections:                                                      │
+│ region, category,                                                 │
+│ (CAST(quantity AS DECIMAL(15,0)) * unit_price) - discount_amount  │
+│ 400,000 rows                                               10.0ms │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Projection ────────────────────┚┖────────────────────────────────╮
+│ Projections:                                                      │
+│ #0, #1, #2, __internal_compress_string_uhugeint(#3),              │
+│ __internal_compress_string_uhugeint(#4)                           │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┒┎────────────────────────────────╯
+╭─ Hash Join ─────────────────────┚┖────────────────────────────────╮
+│ Join Type: INNER                                                  │
+│ Conditions: customer_id = customer_id                             │
+│ 400,000 rows                                                  0µs │
+╰─────────────────────────────────┰┰────────────────────────────────╯
+                                  ┃┠────────────────────────────────────────────────────────────────────────────────────╮
+╭─ Hash Join ─────────────────────┚┖────────────────────────────────╮                                   ╭─ Table Scan ──┴──────────────╮
+│ Join Type: INNER                                                  │                                   │ Table: review.main.customers │
+│ Conditions: product_id = product_id                               │                                   │ Type: Sequential Scan        │
+│ 400,000 rows                                                  0µs │                                   │ Projections: customer_id,    │
+╰─────────────────────────────────┰┰────────────────────────────────╯                                   │              region          │
+                                  ┃┠──────────────────────────────────────────────────╮                 │ Row Groups Scanned: 1 / 1    │
+╭─ Table Scan ────────────────────┚┖────────────────────────────────╮  ╭─ Table Scan ─┴──────────────╮  │ 15,000 rows              0µs │
+│ Table: review.main.sales                                          │  │ Table: review.main.products │  ╰──────────────────────────────╯
+│ Type: Sequential Scan                                             │  │ Type: Sequential Scan       │
+│ Projections: customer_id, product_id, quantity, unit_price,       │  │ Projections: product_id,    │
+│              discount_amount                                      │  │              category       │
+│ Dynamic Filters:                                                  │  │ Row Groups Scanned: 1 / 1   │
+│ optional: customer_id IN PRF(customer_id),                        │  │ 200 rows                0µs │
+│ optional: product_id IN PRF(product_id)                           │  ╰─────────────────────────────╯
+│ Row Groups Scanned: 5 / 5                                         │
+│ 400,000 rows                                               10.0ms │
+╰───────────────────────────────────────────────────────────────────╯
+

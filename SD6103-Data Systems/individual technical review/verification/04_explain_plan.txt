@@ -1,0 +1,16 @@
+╭─ Hash Group By ───────────────────────────╮
+│ Groups: #0                                │
+│ Aggregates: sum(#1)                       │
+│ ~50,569 rows                              │
+╰─────────────────────┬─────────────────────╯
+╭─ Projection ────────┴─────────────────────╮
+│ Projections: region, revenue              │
+│ ~80,000 rows                              │
+╰─────────────────────┬─────────────────────╯
+╭─ Read Parquet ──────┴─────────────────────╮
+│ Function: READ_PARQUET                    │
+│ Projections: region, revenue              │
+│ Filters: sale_date >= '2025-12-01'::DATE, │
+│          category = 'Electronics'         │
+│ ~80,000 rows                              │
+╰───────────────────────────────────────────╯

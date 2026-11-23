@@ -1,0 +1,162 @@
+{
+  "synthetic": true,
+  "seed": 6103,
+  "sales": 400000,
+  "customers": 15000,
+  "products": 200,
+  "date_min": "2025-01-01",
+  "date_max": "2025-12-31",
+  "currency": "synthetic SGD; one currency; no tax or shipping",
+  "total_revenue_cents": 13746257120,
+  "total_quantity": 703714,
+  "groups": [
+    {
+      "region": "APAC",
+      "category": "Books",
+      "transactions": 20491,
+      "revenue_cents": 120274153
+    },
+    {
+      "region": "APAC",
+      "category": "Clothing",
+      "transactions": 34225,
+      "revenue_cents": 574733251
+    },
+    {
+      "region": "APAC",
+      "category": "Electronics",
+      "transactions": 45556,
+      "revenue_cents": 3517839419
+    },
+    {
+      "region": "APAC",
+      "category": "Home",
+      "transactions": 39207,
+      "revenue_cents": 834772475
+    },
+    {
+      "region": "APAC",
+      "category": "Sports",
+      "transactions": 30343,
+      "revenue_cents": 768343595
+    },
+    {
+      "region": "Americas",
+      "category": "Books",
+      "transactions": 10104,
+      "revenue_cents": 59102913
+    },
+    {
+      "region": "Americas",
+      "category": "Clothing",
+      "transactions": 17042,
+      "revenue_cents": 282994251
+    },
+    {
+      "region": "Americas",
+      "category": "Electronics",
+      "transactions": 22784,
+      "revenue_cents": 1766635438
+    },
+    {
+      "region": "Americas",
+      "category": "Home",
+      "transactions": 19512,
+      "revenue_cents": 417942037
+    },
+    {
+      "region": "Americas",
+      "category": "Sports",
+      "transactions": 15442,
+      "revenue_cents": 391623781
+    },
+    {
+      "region": "Europe",
+      "category": "Books",
+      "transactions": 12907,
+      "revenue_cents": 75456248
+    },
+    {
+      "region": "Europe",
+      "category": "Clothing",
+      "transactions": 21108,
+      "revenue_cents": 355575864
+    },
+    {
+      "region": "Europe",
+      "category": "Electronics",
+      "transactions": 28535,
+      "revenue_cents": 2212078720
+    },
+    {
+      "region": "Europe",
+      "category": "Home",
+      "transactions": 24284,
+      "revenue_cents": 517045784
+    },
+    {
+      "region": "Europe",
+      "category": "Sports",
+      "transactions": 18760,
+      "revenue_cents": 484119815
+    },
+    {
+      "region": "MEA",
+      "category": "Books",
+      "transactions": 4738,
+      "revenue_cents": 26588071
+    },
+    {
+      "region": "MEA",
+      "category": "Clothing",
+      "transactions": 7976,
+      "revenue_cents": 133621668
+    },
+    {
+      "region": "MEA",
+      "category": "Electronics",
+      "transactions": 10787,
+      "revenue_cents": 831703397
+    },
+    {
+      "region": "MEA",
+      "category": "Home",
+      "transactions": 9165,
+      "revenue_cents": 196730176
+    },
+    {
+      "region": "MEA",
+      "category": "Sports",
+      "transactions": 7034,
+      "revenue_cents": 179076064
+    }
+  ],
+  "category_revenue_cents": {
+    "Sports": 1823163255,
+    "Electronics": 8328256974,
+    "Clothing": 1346925034,
+    "Home": 1966490472,
+    "Books": 281421385
+  },
+  "region_revenue_cents": {
+    "APAC": 5815962893,
+    "Europe": 3644276431,
+    "MEA": 1367719376,
+    "Americas": 2918298420
+  },
+  "files": {
+    "customers.csv": {
+      "bytes": 308091,
+      "sha256": "4db1e2e3f65daa03b720be55e288bf07e20ae8c24e1771884202ad8411b980fd"
+    },
+    "products.csv": {
+      "bytes": 5968,
+      "sha256": "7dad7ed7697683baa27d487ab35bb5b23f1cfc79c437a1f94baf9067bb75c686"
+    },
+    "sales.csv": {
+      "bytes": 16143426,
+      "sha256": "f1d477455dc6046c8fdc94eb4e03f25884070f1fac01d71ac0bd37f786d0d967"
+    }
+  },
+  "method": "Python random.Random(6103), fixed generation order, integer-cent prices/discounts. Weighted months/categories/regions; dates sampled in 2025. No external data."
+}

@@ -1,0 +1,23 @@
+╭─ Summary ───────────╮
+│ Total Time: 0.0143s │
+│ Data Read: 190.5 kB │
+╰─────────────────────╯
+╭─ Hash Group By ───────────────────────────╮
+│ Groups: #0                                │
+│ Aggregates: sum(#1)                       │
+│ 4 rows                                0µs │
+╰─────────────────────┒┎────────────────────╯
+╭─ Projection ────────┚┖────────────────────╮
+│ Projections: region, revenue              │
+│ 14,594 rows                           0µs │
+╰─────────────────────┒┎────────────────────╯
+╭─ Table Scan ────────┚┖────────────────────╮
+│ Function: READ_PARQUET                    │
+│ Projections: region, revenue              │
+│ Filters: sale_date >= '2025-12-01'::DATE, │
+│          category = 'Electronics'         │
+│ Total Files Read: 1                       │
+│ Filename(s): data/parquet/retail.parquet  │
+│ Row Groups Scanned: 4 / 25                │
+│ 14,594 rows                        10.0ms │
+╰───────────────────────────────────────────╯
