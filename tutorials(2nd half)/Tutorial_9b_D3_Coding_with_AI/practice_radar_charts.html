@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>In-class practice - radar charts 2000-2015</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; margin: 24px; color: #333; }
+  h2 { margin: 0 0 4px; font-weight: 600; }
+  p { margin: 0 0 12px; color: #777; font-size: 13px; }
+  .radar .area { fill: #4682b4; fill-opacity: .35; stroke: #2b5d8a; stroke-width: 1.8; }
+  .radar:hover .area { fill: #e6550d; fill-opacity: .45; stroke: #a63603; }
+  .grid { fill: none; stroke: #ddd; }
+  .spoke { stroke: #ccc; }
+  .lbl { font-size: 9px; fill: #555; }
+  .year { font-size: 14px; font-weight: 700; fill: #333; }
+  .tooltip { position: absolute; pointer-events: none; background: rgba(30,30,30,.92); color: #fff;
+             padding: 7px 10px; border-radius: 4px; font-size: 12px; opacity: 0; line-height: 1.45; }
+</style>
+</head>
+<body>
+<h2>Weather 2000-2015: one radar chart per year (4 &times; 4 grid)</h2>
+<p>Each axis is min-max scaled over all 100 samples (centre = minimum, outer ring = maximum).
+   The dashed grey polygon is the 2000-2015 average. Hover a chart for the raw values.</p>
+<div id="chart"></div>
+<div class="tooltip" id="tip"></div>
+<script>
+/* In-class practice: 16 years (2000-2015) -> 4x4 small multiples of radar charts,
+   year label on each chart, tooltip with the data of that year. */
+const KEYS = ["avgTemp", "maxTemp", "minTemp", "rainfall", "humidity", "wind", "sunshine"];
+const LABELS = {avgTemp: "Avg T", maxTemp: "Max T", minTemp: "Min T", rainfall: "Rain",
+                humidity: "Humidity", wind: "Wind", sunshine: "Sun"};
+const UNITS = {avgTemp: "°C", maxTemp: "°C", minTemp: "°C", rainfall: "mm", humidity: "%",
+               wind: "km/h", sunshine: "h"};
+const CELL = 230, R = 78, N = KEYS.length;
+const angle = i => (Math.PI * 2 * i) / N - Math.PI / 2;
+const tip = d3.select("#tip");
+
+d3.csv("data/climate_100_samples.csv", d3.autoType).then(all => {
+  const scale = Object.fromEntries(KEYS.map(k => [k, d3.scaleLinear(d3.extent(all, d => d[k]), [0, R])]));
+  const years = all.filter(d => d.year >= 2000 && d.year <= 2015).sort((a, b) => a.year - b.year);
+  const mean = Object.fromEntries(KEYS.map(k => [k, d3.mean(years, d => d[k])]));
+  const line = d3.lineRadial().curve(d3.curveLinearClosed).angle((k, i) => angle(i) + Math.PI / 2);
+  const polygon = d => line.radius(k => scale[k](d[k]))(KEYS);
+
+  const svg = d3.select("#chart").append("svg").attr("width", 4 * CELL).attr("height", 4 * CELL);
+  const cells = svg.selectAll(".radar").data(years).join("g").attr("class", "radar")
+      .attr("transform", (d, i) => `translate(${(i % 4) * CELL + CELL / 2},${Math.floor(i / 4) * CELL + CELL / 2 + 8})`);
+
+  cells.append("rect").attr("x", -CELL / 2 + 4).attr("y", -CELL / 2 - 4).attr("width", CELL - 8)
+      .attr("height", CELL - 8).attr("fill", "#fff").attr("stroke", "#eee").attr("rx", 6);
+  [0.25, 0.5, 0.75, 1].forEach(f => cells.append("polygon").attr("class", "grid")
+      .attr("points", KEYS.map((k, i) => [Math.cos(angle(i)) * R * f, Math.sin(angle(i)) * R * f]).join(" ")));
+  KEYS.forEach((k, i) => {
+    cells.append("line").attr("class", "spoke").attr("x2", Math.cos(angle(i)) * R).attr("y2", Math.sin(angle(i)) * R);
+    cells.append("text").attr("class", "lbl").attr("x", Math.cos(angle(i)) * (R + 13))
+        .attr("y", Math.sin(angle(i)) * (R + 13) + 3).attr("text-anchor", "middle").text(LABELS[k]);
+  });
+  cells.append("path").attr("d", polygon(mean)).attr("fill", "none").attr("stroke", "#999")
+      .attr("stroke-dasharray", "3,3");
+  cells.append("path").attr("class", "area").attr("d", d => polygon(Object.fromEntries(KEYS.map(k => [k, d3.min(all, e => e[k])]))))
+      .transition().duration(900).delay((d, i) => i * 40).attr("d", polygon);   // grow from centre
+  cells.append("text").attr("class", "year").attr("x", -CELL / 2 + 14).attr("y", -CELL / 2 + 16).text(d => d.year);
+
+  cells.on("mouseover", () => tip.style("opacity", 1))
+       .on("mousemove", (event, d) => tip.html(`<b>${d.year}</b><br>` +
+          KEYS.map(k => `${LABELS[k]}: ${d[k]} ${UNITS[k]}`).join("<br>"))
+          .style("left", (event.pageX + 14) + "px").style("top", (event.pageY - 20) + "px"))
+       .on("mouseout", () => tip.style("opacity", 0));
+}).catch(err => d3.select("#chart").append("p").style("color", "red")
+   .text("Could not load the CSV - start a local server: python -m http.server 8000 (" + err + ")"));
+</script>
+</body>
+</html>
