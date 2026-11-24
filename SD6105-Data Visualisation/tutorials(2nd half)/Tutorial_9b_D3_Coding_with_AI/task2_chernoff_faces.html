@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Task 2 - Chernoff faces of 100 climate samples</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; margin: 24px; color: #333; }
+  h2 { margin: 0 0 4px; font-weight: 600; }
+  .wrap { display: flex; gap: 28px; align-items: flex-start; }
+  .legend { font-size: 13px; line-height: 1.7; max-width: 300px; }
+  .legend b { display: inline-block; width: 92px; }
+  .face { cursor: pointer; }
+  .face:hover .head { stroke: #000; stroke-width: 2.5; }
+  .tooltip { position: absolute; pointer-events: none; background: rgba(30,30,30,.92); color: #fff;
+             padding: 7px 10px; border-radius: 4px; font-size: 12px; opacity: 0; line-height: 1.45; }
+</style>
+</head>
+<body>
+<h2>Climate samples 2000-2099 as a 10 &times; 10 grid of Chernoff faces</h2>
+<div class="wrap">
+  <div id="chart"></div>
+  <div class="legend">
+    <p>Each face = one year (row-major, 2000 top-left to 2099 bottom-right). Hover a face for the raw values.</p>
+    <p><b>Face colour</b> avg. temperature (blue &rarr; red)<br>
+       <b>Face height</b> max. temperature<br>
+       <b>Face width</b> min. temperature<br>
+       <b>Eye size</b> rainfall<br>
+       <b>Eyebrow slant</b> humidity (angry = humid)<br>
+       <b>Nose length</b> wind speed<br>
+       <b>Smile</b> sunshine hours (frown &rarr; smile)</p>
+    <p style="color:#777">All features are min-max scaled over the 100 samples. Chernoff faces are a
+       glyph method for high-dimensional data: good for spotting similar / outlying records at a glance,
+       weak for reading exact values (features are not equally salient).</p>
+  </div>
+</div>
+<div class="tooltip" id="tip"></div>
+<script>
+const COLS = 10, CELL = 74;
+const svg = d3.select("#chart").append("svg").attr("width", COLS * CELL).attr("height", COLS * CELL + 10);
+const tip = d3.select("#tip");
+const KEYS = ["avgTemp", "maxTemp", "minTemp", "rainfall", "humidity", "wind", "sunshine"];
+
+d3.csv("data/climate_100_samples.csv", d3.autoType).then(data => {
+  // one [0,1] scale per variable
+  const s = Object.fromEntries(KEYS.map(k => [k, d3.scaleLinear(d3.extent(data, d => d[k]), [0, 1])]));
+  const colour = d3.scaleSequential(d3.interpolateRdYlBu).domain([1, 0]);   // hot = red
+
+  const g = svg.selectAll(".face").data(data).join("g").attr("class", "face")
+      .attr("transform", (d, i) => `translate(${(i % COLS) * CELL + CELL / 2},${Math.floor(i / COLS) * CELL + CELL / 2})`);
+
+  // head: width <- minTemp, height <- maxTemp, colour <- avgTemp
+  g.append("ellipse").attr("class", "head")
+      .attr("rx", d => 18 + 10 * s.minTemp(d.minTemp))
+      .attr("ry", d => 22 + 10 * s.maxTemp(d.maxTemp))
+      .attr("fill", d => colour(s.avgTemp(d.avgTemp)))
+      .attr("stroke", "#555").attr("stroke-width", 1);
+
+  // eyes: size <- rainfall
+  [-1, 1].forEach(side => {
+    g.append("circle").attr("cx", side * 8).attr("cy", -6)
+        .attr("r", d => 2 + 4 * s.rainfall(d.rainfall)).attr("fill", "#fff").attr("stroke", "#333");
+    g.append("circle").attr("cx", side * 8).attr("cy", -6).attr("r", 1.6).attr("fill", "#222");
+    // eyebrows: slant <- humidity (inner end goes down when humid)
+    g.append("line")
+        .attr("x1", side * 4).attr("x2", side * 13)
+        .attr("y1", d => -14 + 5 * s.humidity(d.humidity))
+        .attr("y2", d => -14 - 5 * s.humidity(d.humidity))
+        .attr("stroke", "#333").attr("stroke-width", 1.8).attr("stroke-linecap", "round");
+  });
+
+  // nose: length <- wind
+  g.append("line").attr("x1", 0).attr("x2", 0).attr("y1", -2)
+      .attr("y2", d => 2 + 9 * s.wind(d.wind)).attr("stroke", "#333").attr("stroke-width", 1.5);
+
+  // mouth: curvature <- sunshine (quadratic curve; control point above = frown)
+  g.append("path").attr("fill", "none").attr("stroke", "#333").attr("stroke-width", 1.8)
+      .attr("d", d => {
+        const c = 16 + 14 * (s.sunshine(d.sunshine) - 0.5) * 2;   // 2..30
+        return `M -10 16 Q 0 ${c} 10 16`;
+      });
+
+  g.append("text").attr("y", CELL / 2 - 2).attr("text-anchor", "middle").attr("font-size", 9)
+      .attr("fill", "#777").text(d => d.year);
+
+  g.on("mouseover", () => tip.style("opacity", 1))
+   .on("mousemove", (event, d) => tip.html(
+      `<b>${d.year}</b><br>Avg temp: ${d.avgTemp} &deg;C<br>Max temp: ${d.maxTemp} &deg;C<br>` +
+      `Min temp: ${d.minTemp} &deg;C<br>Rainfall: ${d.rainfall} mm<br>Humidity: ${d.humidity}%<br>` +
+      `Wind: ${d.wind} km/h<br>Sunshine: ${d.sunshine} h`)
+      .style("left", (event.pageX + 14) + "px").style("top", (event.pageY - 20) + "px"))
+   .on("mouseout", () => tip.style("opacity", 0));
+}).catch(err => d3.select("#chart").append("p").style("color", "red")
+   .text("Could not load the CSV - start a local server: python -m http.server 8000 (" + err + ")"));
+</script>
+</body>
+</html>

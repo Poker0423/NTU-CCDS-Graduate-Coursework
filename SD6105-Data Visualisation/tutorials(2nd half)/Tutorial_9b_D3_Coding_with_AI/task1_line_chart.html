@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Task 1a - AAPL closing price (line chart)</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; margin: 24px; color: #333; }
+  h2 { margin: 0 0 4px; font-weight: 600; }
+  p { margin: 0 0 12px; color: #777; font-size: 13px; }
+  .tooltip { position: absolute; pointer-events: none; background: rgba(30,30,30,.9); color: #fff;
+             padding: 6px 9px; border-radius: 4px; font-size: 12px; opacity: 0; }
+  .axis text { font-size: 11px; }
+</style>
+</head>
+<body>
+<h2>Apple (AAPL) daily closing price, May 2013 - May 2018</h2>
+<p>Hover to read the exact closing price; the light line is the quarterly average used in the bar chart.</p>
+<div id="chart"></div>
+<div class="tooltip" id="tip"></div>
+<script>
+/* Task 1 (part 1): visualize the closing price of aapl.csv as a line chart.
+   Steps: load CSV -> parse dates/numbers -> x = time scale, y = linear scale
+   -> d3.line() path -> axes -> hover "focus" with a bisector for details on demand. */
+const margin = {top: 20, right: 30, bottom: 40, left: 60};
+const width = 960 - margin.left - margin.right, height = 460 - margin.top - margin.bottom;
+
+const svg = d3.select("#chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+d3.csv("data/aapl.csv", d => ({date: d3.timeParse("%Y-%m-%d")(d.Date), close: +d.Close}))
+  .then(data => {
+    const x = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, width]);
+    const y = d3.scaleLinear().domain([0, d3.max(data, d => d.close)]).nice().range([height, 0]);
+
+    svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height})`)
+       .call(d3.axisBottom(x).ticks(d3.timeMonth.every(6)).tickFormat(d3.timeFormat("%b %Y")));
+    svg.append("g").attr("class", "axis").call(d3.axisLeft(y).tickFormat(d => "$" + d));
+    svg.append("g").call(d3.axisLeft(y).tickSize(-width).tickFormat(""))
+       .call(g => g.selectAll("line").attr("stroke", "#eee")).call(g => g.select(".domain").remove());
+    svg.append("text").attr("x", -height / 2).attr("y", -45).attr("transform", "rotate(-90)")
+       .attr("text-anchor", "middle").attr("font-size", 12).text("Closing price (USD)");
+
+    // quarterly average (context line)
+    const q = d3.rollups(data, v => d3.mean(v, d => d.close),
+                         d => d3.timeMonth.offset(d3.timeYear(d.date), Math.floor(d.date.getMonth() / 3) * 3))
+                .map(([date, close]) => ({date: d3.timeMonth.offset(date, 1.5), close}));
+    svg.append("path").datum(q).attr("fill", "none").attr("stroke", "#9ecae1").attr("stroke-width", 3)
+       .attr("d", d3.line().x(d => x(d.date)).y(d => y(d.close)).curve(d3.curveMonotoneX));
+
+    // main line, drawn with an animated stroke
+    const path = svg.append("path").datum(data).attr("fill", "none")
+       .attr("stroke", "steelblue").attr("stroke-width", 1.5)
+       .attr("d", d3.line().x(d => x(d.date)).y(d => y(d.close)));
+    const L = path.node().getTotalLength();
+    path.attr("stroke-dasharray", `${L} ${L}`).attr("stroke-dashoffset", L)
+        .transition().duration(1500).ease(d3.easeLinear).attr("stroke-dashoffset", 0);
+
+    // hover focus
+    const focus = svg.append("g").style("display", "none");
+    focus.append("line").attr("y1", 0).attr("y2", height).attr("stroke", "#999").attr("stroke-dasharray", "3,3");
+    focus.append("circle").attr("r", 4.5).attr("fill", "steelblue");
+    const tip = d3.select("#tip");
+    const bisect = d3.bisector(d => d.date).left;
+    svg.append("rect").attr("width", width).attr("height", height).attr("fill", "transparent")
+       .on("mouseover", () => { focus.style("display", null); tip.style("opacity", 1); })
+       .on("mouseout", () => { focus.style("display", "none"); tip.style("opacity", 0); })
+       .on("mousemove", function (event) {
+          const x0 = x.invert(d3.pointer(event)[0]);
+          const i = Math.min(data.length - 1, Math.max(1, bisect(data, x0)));
+          const d = (x0 - data[i - 1].date > data[i].date - x0) ? data[i] : data[i - 1];
+          focus.attr("transform", `translate(${x(d.date)},0)`);
+          focus.select("circle").attr("cy", y(d.close));
+          tip.html(`<b>${d3.timeFormat("%d %b %Y")(d.date)}</b><br>Close: $${d.close.toFixed(2)}`)
+             .style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 28) + "px");
+       });
+  })
+  .catch(err => d3.select("#chart").append("p").style("color", "red")
+     .text("Could not load data/aapl.csv - start a local server: python -m http.server 8000 (" + err + ")"));
+</script>
+</body>
+</html>
