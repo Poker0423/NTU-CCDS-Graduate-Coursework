@@ -1,0 +1,185 @@
+\begin{thebibliography}{27}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Amini et~al.(2020)Amini, Schwarting, Soleimany, and
+  Rus}]{amini2020deep}
+Amini, A.; Schwarting, W.; Soleimany, A.; and Rus, D. 2020.
+\newblock Deep evidential regression.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Angelopoulos and Bates(2021)}]{angelopoulos2021gentle}
+Angelopoulos, A.~N.; and Bates, S. 2021.
+\newblock A gentle introduction to conformal prediction and distribution-free
+  uncertainty quantification.
+\newblock \emph{arXiv preprint arXiv:2107.07511}.
+
+\bibitem[{Choi et~al.(2026)Choi, Kim, Lee, Jo, Lee, and Ahn}]{hcm2026}
+Choi, E.; Kim, H.-Y.; Lee, J.; Jo, T.; Lee, M.; and Ahn, H. 2026.
+\newblock Uncertainty Estimation via Hyperspherical Confidence Mapping.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+\newblock ArXiv:2605.05964.
+
+\bibitem[{Deng et~al.(2019)Deng, Guo, Xue, and Zafeiriou}]{deng2019arcface}
+Deng, J.; Guo, J.; Xue, N.; and Zafeiriou, S. 2019.
+\newblock {ArcFace}: Additive Angular Margin Loss for Deep Face Recognition.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition (CVPR)}.
+
+\bibitem[{Du et~al.(2022)Du, Gozum, Ming, and Li}]{du2022siren}
+Du, X.; Gozum, G.; Ming, Y.; and Li, Y. 2022.
+\newblock {SIREN}: Shaping representations for detecting out-of-distribution
+  objects.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Dua and Graff(2017)}]{dua2017uci}
+Dua, D.; and Graff, C. 2017.
+\newblock {UCI} Machine Learning Repository.
+\newblock University of California, Irvine, School of Information and Computer
+  Sciences.
+
+\bibitem[{Gal and Ghahramani(2016)}]{gal2016dropout}
+Gal, Y.; and Ghahramani, Z. 2016.
+\newblock Dropout as a {Bayesian} approximation: Representing model uncertainty
+  in deep learning.
+\newblock In \emph{International Conference on Machine Learning (ICML)},
+  1050--1059.
+
+\bibitem[{Gneiting and Raftery(2007)}]{gneiting2007strictly}
+Gneiting, T.; and Raftery, A.~E. 2007.
+\newblock Strictly proper scoring rules, prediction, and estimation.
+\newblock \emph{Journal of the American Statistical Association}, 102(477):
+  359--378.
+
+\bibitem[{He et~al.(2016)He, Zhang, Ren, and Sun}]{he2016deep}
+He, K.; Zhang, X.; Ren, S.; and Sun, J. 2016.
+\newblock Deep residual learning for image recognition.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition (CVPR)}.
+
+\bibitem[{Hendrycks and Gimpel(2017)}]{hendrycks2017baseline}
+Hendrycks, D.; and Gimpel, K. 2017.
+\newblock A baseline for detecting misclassified and out-of-distribution
+  examples in neural networks.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+
+\bibitem[{Hern{\'a}ndez-Lobato and Adams(2015)}]{hernandez2015pbp}
+Hern{\'a}ndez-Lobato, J.~M.; and Adams, R.~P. 2015.
+\newblock Probabilistic backpropagation for scalable learning of {Bayesian}
+  neural networks.
+\newblock In \emph{International Conference on Machine Learning (ICML)}.
+
+\bibitem[{Lakshminarayanan, Pritzel, and
+  Blundell(2017)}]{lakshminarayanan2017simple}
+Lakshminarayanan, B.; Pritzel, A.; and Blundell, C. 2017.
+\newblock Simple and scalable predictive uncertainty estimation using deep
+  ensembles.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Lee et~al.(2018)Lee, Lee, Lee, and Shin}]{lee2018simple}
+Lee, K.; Lee, K.; Lee, H.; and Shin, J. 2018.
+\newblock A simple unified framework for detecting out-of-distribution samples
+  and adversarial attacks.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Lei et~al.(2018)Lei, G'Sell, Rinaldo, Tibshirani, and
+  Wasserman}]{lei2018conformal}
+Lei, J.; G'Sell, M.; Rinaldo, A.; Tibshirani, R.~J.; and Wasserman, L. 2018.
+\newblock Distribution-free predictive inference for regression.
+\newblock \emph{Journal of the American Statistical Association}, 113(523):
+  1094--1111.
+
+\bibitem[{Liang, Li, and Srikant(2018)}]{liang2018enhancing}
+Liang, S.; Li, Y.; and Srikant, R. 2018.
+\newblock Enhancing the reliability of out-of-distribution image detection in
+  neural networks.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+
+\bibitem[{Liu et~al.(2020{\natexlab{a}})Liu, Lin, Padhy, Tran, Bedrax-Weiss,
+  and Lakshminarayanan}]{liu2020sngp}
+Liu, J.~Z.; Lin, Z.; Padhy, S.; Tran, D.; Bedrax-Weiss, T.; and
+  Lakshminarayanan, B. 2020{\natexlab{a}}.
+\newblock Simple and principled uncertainty estimation with deterministic deep
+  learning via distance awareness.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Liu et~al.(2020{\natexlab{b}})Liu, Wang, Owens, and
+  Li}]{liu2020energy}
+Liu, W.; Wang, X.; Owens, J.; and Li, Y. 2020{\natexlab{b}}.
+\newblock Energy-based out-of-distribution detection.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Ming et~al.(2023)Ming, Sun, Dia, and Li}]{ming2023cider}
+Ming, Y.; Sun, Y.; Dia, O.; and Li, Y. 2023.
+\newblock How to exploit hyperspherical embeddings for out-of-distribution
+  detection?
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+
+\bibitem[{Romano, Patterson, and Cand{\`e}s(2019)}]{romano2019cqr}
+Romano, Y.; Patterson, E.; and Cand{\`e}s, E.~J. 2019.
+\newblock Conformalized quantile regression.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Sensoy, Kaplan, and Kandemir(2018)}]{sensoy2018evidential}
+Sensoy, M.; Kaplan, L.; and Kandemir, M. 2018.
+\newblock Evidential deep learning to quantify classification uncertainty.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Sun et~al.(2022)Sun, Ming, Zhu, and Li}]{sun2022knn}
+Sun, Y.; Ming, Y.; Zhu, X.; and Li, Y. 2022.
+\newblock Out-of-distribution detection with deep nearest neighbors.
+\newblock In \emph{International Conference on Machine Learning (ICML)}.
+
+\bibitem[{Thulasidasan et~al.(2019)Thulasidasan, Chennupati, Bilmes,
+  Bhattacharya, and Michalak}]{thulasidasan2019mixup}
+Thulasidasan, S.; Chennupati, G.; Bilmes, J.; Bhattacharya, T.; and Michalak,
+  S. 2019.
+\newblock On mixup training: Improved calibration and predictive uncertainty
+  for deep neural networks.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{van Amersfoort et~al.(2020)van Amersfoort, Smith, Teh, and
+  Gal}]{vanamersfoort2020duq}
+van Amersfoort, J.; Smith, L.; Teh, Y.~W.; and Gal, Y. 2020.
+\newblock Uncertainty estimation using a single deep deterministic neural
+  network.
+\newblock In \emph{International Conference on Machine Learning (ICML)}.
+
+\bibitem[{Vovk, Gammerman, and Shafer(2005)}]{vovk2005algorithmic}
+Vovk, V.; Gammerman, A.; and Shafer, G. 2005.
+\newblock \emph{Algorithmic learning in a random world}.
+\newblock Springer.
+
+\bibitem[{Yang et~al.(2022)Yang, Wang, Zou et~al.}]{yang2022openood}
+Yang, J.; Wang, P.; Zou, D.; et~al. 2022.
+\newblock {OpenOOD}: Benchmarking generalized out-of-distribution detection.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS),
+  Datasets and Benchmarks Track}.
+
+\bibitem[{Zhang et~al.(2018)Zhang, Cisse, Dauphin, and
+  Lopez-Paz}]{zhang2018mixup}
+Zhang, H.; Cisse, M.; Dauphin, Y.~N.; and Lopez-Paz, D. 2018.
+\newblock mixup: Beyond empirical risk minimization.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+
+\bibitem[{Zhang et~al.(2023)Zhang, Yang, Wang, Wang, Lin, Zhang, Sun, Du, Li,
+  Liu, Chen, and Li}]{zhang2023openood}
+Zhang, J.; Yang, J.; Wang, P.; Wang, H.; Lin, Y.; Zhang, H.; Sun, Y.; Du, X.;
+  Li, Y.; Liu, Z.; Chen, Y.; and Li, H. 2023.
+\newblock {OpenOOD} v1.5: Enhanced benchmark for out-of-distribution detection.
+\newblock \emph{arXiv preprint arXiv:2306.09301}.
+
+\end{thebibliography}

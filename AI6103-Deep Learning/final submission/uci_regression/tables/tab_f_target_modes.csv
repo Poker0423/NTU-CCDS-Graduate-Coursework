@@ -1,0 +1,16 @@
+model,mode,nrmse,spearman,is_prop,auroc_s5
+hcm,raw,0.380,0.162,4.498,0.947
+hcm,scale0.1,0.364,0.132,3.569,0.851
+hcm,scale10,0.553,0.101,6.792,0.929
+hcm,center,0.368,0.072,5.928,0.919
+hcm,standardize,0.318,0.188,5.007,0.933
+rhcm-detach,raw,0.371,0.242,1.537,0.778
+rhcm-detach,scale0.1,0.336,0.243,1.429,0.657
+rhcm-detach,scale10,0.413,0.268,1.751,0.815
+rhcm-detach,center,0.319,0.255,1.348,0.669
+rhcm-detach,standardize,0.297,0.225,1.286,0.628
+rhcm-own,raw,0.367,0.385,1.451,0.836
+rhcm-own,scale0.1,0.333,0.372,1.358,0.809
+rhcm-own,scale10,0.412,0.453,1.541,0.883
+rhcm-own,center,0.321,0.340,1.314,0.760
+rhcm-own,standardize,0.298,0.266,1.279,0.745
